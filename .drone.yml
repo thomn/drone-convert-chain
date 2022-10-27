@@ -13,7 +13,7 @@ steps:
   image: plugins/docker
   settings:
     auto_tag: true
-    repo: thomn/drone-chain
+    repo: thomn/drone-convert-chain
     username:
       from_secret: docker_username
     password:
