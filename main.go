@@ -55,7 +55,7 @@ func main() {
 	}
 
 	handler := converter.Handler(
-		plugin.New(targets...),
+		plugin.New(spec.Debug, targets...),
 		spec.Secret,
 		logrus.StandardLogger(),
 	)

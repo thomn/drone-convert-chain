@@ -7,6 +7,8 @@ package plugin
 import (
 	"context"
 	"fmt"
+	"os"
+	"encoding/json"
 
 	"github.com/drone/drone-go/drone"
 	"github.com/drone/drone-go/plugin/converter"
@@ -20,7 +22,7 @@ type Target struct {
 }
 
 // New returns a new conversion plugin.
-func New(targets ...Target) converter.Plugin {
+func New(debug bool, targets ...Target) converter.Plugin {
 	plugins := make(map[string]converter.Plugin, len(targets))
 	for _, target := range targets {
 		plugins[target.Endpoint] = converter.Client(
@@ -29,11 +31,15 @@ func New(targets ...Target) converter.Plugin {
 			target.SkipVerify,
 		)
 	}
-	return &plugin{targets: plugins}
+	return &plugin{
+		targets: plugins,
+		debug: debug,
+	}
 }
 
 type plugin struct {
 	targets map[string]converter.Plugin
+	debug bool
 }
 
 func (p *plugin) Convert(ctx context.Context, req *converter.Request) (*drone.Config, error) {
@@ -41,7 +47,10 @@ func (p *plugin) Convert(ctx context.Context, req *converter.Request) (*drone.Co
 	cfg := req.Config.Data
 
 	logger := logrus.WithField("repo", req.Repo.Slug)
+	conversion := 0
 	for endpoint, target := range p.targets {
+		conversion++
+
 		logger.WithField("endpoint", endpoint).Info("calling")
 		config, err := target.Convert(ctx, &converter.Request{
 			Repo:   req.Repo,
@@ -51,6 +60,13 @@ func (p *plugin) Convert(ctx context.Context, req *converter.Request) (*drone.Co
 		if err != nil {
 			logger.WithError(err).Error("unable to build")
 			return nil, fmt.Errorf("unable to call %w", err)
+		}
+
+		dumpfile := fmt.Sprintf("/tmp/%s-%d-%d", req.Repo.Name, req.Build.Number, conversion)
+		df, ferr := os.Create(dumpfile)
+		if ferr == nil {
+			_ = json.NewEncoder(df).Encode(cfg)
+			_ = df.Close()
 		}
 
 		cfg = config.Data
