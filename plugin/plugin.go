@@ -8,7 +8,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"encoding/json"
 
 	"github.com/drone/drone-go/drone"
 	"github.com/drone/drone-go/plugin/converter"
@@ -62,10 +61,10 @@ func (p *plugin) Convert(ctx context.Context, req *converter.Request) (*drone.Co
 			return nil, fmt.Errorf("unable to call %w", err)
 		}
 
-		dumpfile := fmt.Sprintf("/tmp/%s-%d-%d", req.Repo.Name, req.Build.Number, conversion)
+		dumpfile := fmt.Sprintf("/tmp/%s-%d-%d", req.Repo.Name, req.Build.ID, conversion)
 		df, ferr := os.Create(dumpfile)
 		if ferr == nil {
-			_ = json.NewEncoder(df).Encode(cfg)
+			_, _ = df.WriteString(cfg)
 			_ = df.Close()
 		}
 
