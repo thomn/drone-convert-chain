@@ -12,7 +12,7 @@ RUN go build -o /app/app .
 
 # ---
 
-FROM scratch
+FROM busybox
 COPY --from=builder /app/app /plugin
 COPY --from=builder /etc/ssl/cert.pem /etc/ssl/cert.pem
 ENTRYPOINT ["/plugin"]
