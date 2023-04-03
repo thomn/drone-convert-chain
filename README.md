@@ -22,7 +22,7 @@ $ docker run -d \
   --env=TARGET_SECRETS=4fce87fb3a28d462331dff6e1bb9c98b,2fd99e9939e4774ff9dfda816cbf93a9 \
   --env=TARGET_SKIP_VERIFIES=false,false \
   --restart=always \
-  --name=converter thomn/drone-convert-chain
+  --name=converter ghcr.io/thomn/drone-convert-chain:main
 ```
 
 Update your Drone server configuration to include the plugin address and the shared secret.
